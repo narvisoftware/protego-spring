@@ -1,0 +1,15 @@
+= Protego Spring
+:icons: font
+
+image::https://badgers.space/badge/foo/Warning/red?icon=feather-alert-triangle&scale=1.4&label=&label_color=orange[]
+[IMPORTANT]
+.Work in progress
+****
+v 0.9
+****
+
+This an implementation of the API from https://github.com/narvisoftware/protego-core[protego-core].
+
+=== License
+ifdef::env-name[:relfilesuffix: .adoc]
+This project is licensed under the MIT License - see the xref:License.adoc[License.adoc] file for details.
