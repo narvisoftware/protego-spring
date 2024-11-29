@@ -7,24 +7,32 @@ import static app.narvi.protego.signatures.rules.TestExecutionSteps.TestSteps.TH
 import static app.narvi.protego.signatures.rules.TestExecutionSteps.TestSteps.WHEN_;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import app.narvi.protego.PolicyEvaluator;
 import app.narvi.protego.signatures.rules.ScanningPolicyRuleProvider;
 import app.narvi.protego.signatures.rules.Test;
 import app.narvi.protego.signatures.rules.TestExecutionSteps.Scenario;
+import app.narvi.protego.signatures.rules.TestSpringConfiguration;
 import app.narvi.protego.signatures.rules.sametenant.User.Role;
 import app.narvi.protego.signatures.rules.sametenant.protego.TenantAccessPermission;
 
-@Order(1)
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {TestSpringConfiguration.class})
+@ActiveProfiles("test")
 public class TenantAccessIT extends Test {
+
+  @Autowired
+  ScanningPolicyRuleProvider scanningPolicyRuleProvider;
 
   @Scenario("User can have full access to his own tenant resources.")
   public void allowOwnTenant() throws Exception {
     GIVEN_("The framework is initialized");
-    PolicyEvaluator.registerProviders(
-        new ScanningPolicyRuleProvider("app.narvi.protego")
-    );
+    PolicyEvaluator.registerProviders(scanningPolicyRuleProvider);
 
     AND_GIVEN_("The user is authenticated");
     Tenant tenant = new Tenant("Sample Tenant");

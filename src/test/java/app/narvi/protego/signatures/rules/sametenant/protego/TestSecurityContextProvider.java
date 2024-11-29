@@ -1,16 +1,18 @@
 package app.narvi.protego.signatures.rules.sametenant.protego;
 
-import app.narvi.protego.signatures.rules.SecurityContextProvider;
-import app.narvi.protego.signatures.rules.sametenant.Tenant;
-import app.narvi.protego.signatures.rules.sametenant.User;
-import app.narvi.protego.signatures.rules.sametenant.User.Role;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import app.narvi.protego.signatures.rules.SecurityContextProvider;
+
+@Component
 public class TestSecurityContextProvider implements SecurityContextProvider<TestSecurityContext> {
+
+  @Autowired
+  TestSecurityContext testSecurityContext;
 
   @Override
   public TestSecurityContext getCurrentSecurityContext() {
-    Tenant tenant = new Tenant("Sample Tenant");
-    User user = new User("John Doe", Role.PATIENT, tenant);
-    return new TestSecurityContext();
+    return testSecurityContext;
   }
 }

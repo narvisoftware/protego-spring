@@ -3,12 +3,12 @@ package app.narvi.protego.signatures.rules.sametenant;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AnEntityResource {
+public class BaseEntity {
 
   private String id;
   private Tenant tenantOwner;
 
-  public AnEntityResource(Tenant tenantOwner) {
+  public BaseEntity(Tenant tenantOwner) {
     this.tenantOwner = tenantOwner;
     id = UUID.randomUUID().toString().replaceAll("-", "");
   }
@@ -29,7 +29,7 @@ public class AnEntityResource {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AnEntityResource that = (AnEntityResource) o;
+    BaseEntity that = (BaseEntity) o;
     return Objects.equals(id, that.id);
   }
 

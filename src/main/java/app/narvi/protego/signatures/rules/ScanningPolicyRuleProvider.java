@@ -4,18 +4,24 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.NamedBeanHolder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.stereotype.Component;
 
+import app.narvi.protego.AuditProvider;
+import app.narvi.protego.AuditServices;
 import app.narvi.protego.Permission;
 import app.narvi.protego.PolicyRulesProvider;
 
 @Component
-public class ScanningPolicyRuleProvider implements PolicyRulesProvider {
+public class ScanningPolicyRuleProvider implements PolicyRulesProvider, InitializingBean {
 
   @Autowired
   ApplicationContext applicationContext;
@@ -23,13 +29,32 @@ public class ScanningPolicyRuleProvider implements PolicyRulesProvider {
   @Autowired
   SecurityContextProvider securityContextProvider;
 
-  private final String baseScanPackage;
   private static Set<Class<? extends SpringBeanPolicyRule>> policyRules;
 
-  public ScanningPolicyRuleProvider(String baseScanpackage) {
-    baseScanpackage = baseScanpackage.replace('.', '/');
-    this.baseScanPackage = baseScanpackage;
+  @Value("${protego.policyRules.packageToScan}")
+  private String baseScanPackage;
+
+  protected ScanningPolicyRuleProvider() {
+
+  }
+
+  public void afterPropertiesSet() {
+    if(baseScanPackage == null) {
+      throw new IllegalArgumentException("Spring property 'protego.policyRules.packageToScan' must be defined");
+    }
+    baseScanPackage = baseScanPackage.replace('.', '/');
+    loadAuditProvidersAsSpringBeans();
     findPolicyRulesInClasspath();
+  }
+
+  private void loadAuditProvidersAsSpringBeans() {
+    AutowireCapableBeanFactory beanFactory = applicationContext.getAutowireCapableBeanFactory();
+    Set<AuditProvider> auditProviders = AuditServices.getAuditProviders();
+    for(AuditProvider anAuditProvider : auditProviders) {
+      NamedBeanHolder<? extends AuditProvider> namedBeanHolder = beanFactory.resolveNamedBean(anAuditProvider.getClass());
+      String beanName = namedBeanHolder.getBeanName();
+      beanFactory.configureBean(anAuditProvider, beanName);
+    }
   }
 
   private void findPolicyRulesInClasspath() {

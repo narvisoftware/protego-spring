@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 
 import app.narvi.protego.Permission;
 
-@Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public abstract class SpringBeanPermission<A> extends Permission<A> {
 
   public SpringBeanPermission(A action, Object... protectedResources) {

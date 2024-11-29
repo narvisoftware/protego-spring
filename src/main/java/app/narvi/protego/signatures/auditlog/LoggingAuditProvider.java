@@ -20,12 +20,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import app.narvi.protego.AuditProvider;
 import app.narvi.protego.CrudAction;
 import app.narvi.protego.signatures.permission.SpringBeanPermission;
 import app.narvi.protego.signatures.rules.SpringBeanPolicyRule;
 
+@Component
 public class LoggingAuditProvider implements AuditProvider<SpringBeanPermission, SpringBeanPolicyRule> {
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
