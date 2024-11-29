@@ -1,8 +1,0 @@
-# thins key must be present
-publicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJuvI3IqeKHnjykZSFxSQwtjed/9z9TjRmayJY/nAudl+KPLGVc3SwlVJFG4Y0iMD2mHoXdVZPGqm1trS4BYq7cCAwEAAQ==
-# also class/signature keys must be present
-policyRuleCofigurations:
-- className: app.narvi.protego.signatures.rules.sametenant.AllowOwnTenantPolicyRule
-  signature: YZz6nSp8zsU/9UeyujKlcTbAvDvjkhfFhRH/ixLm4jn8mIk1krxeKyI43JF6hDNo3Ajsr/6AYcXsxLS4ukdUuA==
-- className: app.narvi.protego.signatures.rules.sametenant.PermitNothingPolicyRule
-  signature: PudT1FyhanHC6mLe6jSTczE5zqLNh2cHSi468iAmJ++UrxHsrJDZ72q7tyOgLmmYfk52uIz+KP6c8RIVgys63A==

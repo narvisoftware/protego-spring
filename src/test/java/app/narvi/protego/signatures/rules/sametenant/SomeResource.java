@@ -1,6 +1,6 @@
 package app.narvi.protego.signatures.rules.sametenant;
 
-public class SomeResource extends TenantResource {
+public class SomeResource extends AnEntityResource {
 
   private String name;
 

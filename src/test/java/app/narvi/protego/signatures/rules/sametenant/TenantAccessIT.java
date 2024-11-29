@@ -10,25 +10,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Order;
 
 import app.narvi.protego.PolicyEvaluator;
-import app.narvi.protego.PolicyRulesProvider;
-import app.narvi.protego.signatures.rules.SignedPolicyRuleProvider;
+import app.narvi.protego.signatures.rules.ScanningPolicyRuleProvider;
 import app.narvi.protego.signatures.rules.Test;
 import app.narvi.protego.signatures.rules.TestExecutionSteps.Scenario;
-import app.narvi.protego.signatures.rules.conf.Configuration;
 import app.narvi.protego.signatures.rules.sametenant.User.Role;
+import app.narvi.protego.signatures.rules.sametenant.protego.TenantAccessPermission;
 
 @Order(1)
 public class TenantAccessIT extends Test {
 
   @Scenario("User can have full access to his own tenant resources.")
   public void allowOwnTenant() throws Exception {
-    GIVEN_("Using cutom policy rules configuration file.");
-    System.setProperty(Configuration.FILE_NAME_PROPERTY,
-        "app/narvi/protego/signatures/rules/sametenant/allow-same-tenant-policy-rules.yaml");
-
-    AND_GIVEN_("The framework is initialized");
-    PolicyRulesProvider policyRulesProvider = new SignedPolicyRuleProvider();
-    PolicyEvaluator.registerProviders(policyRulesProvider);
+    GIVEN_("The framework is initialized");
+    PolicyEvaluator.registerProviders(
+        new ScanningPolicyRuleProvider("app.narvi.protego")
+    );
 
     AND_GIVEN_("The user is authenticated");
     Tenant tenant = new Tenant("Sample Tenant");
