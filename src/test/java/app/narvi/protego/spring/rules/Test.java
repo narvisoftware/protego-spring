@@ -1,4 +1,4 @@
-package app.narvi.protego.signatures.rules;
+package app.narvi.protego.spring.rules;
 
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.MethodOrderer;

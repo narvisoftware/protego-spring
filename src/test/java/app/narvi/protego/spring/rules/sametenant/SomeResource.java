@@ -1,4 +1,4 @@
-package app.narvi.protego.signatures.rules.sametenant;
+package app.narvi.protego.spring.rules.sametenant;
 
 public class SomeResource extends BaseEntity {
 

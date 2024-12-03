@@ -1,4 +1,4 @@
-package app.narvi.protego.signatures.rules;
+package app.narvi.protego.spring.rules;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.platform.commons.util.ClassUtils;
 import org.junit.platform.commons.util.Preconditions;
 
-import app.narvi.protego.signatures.rules.TestExecutionSteps.Scenario;
+import app.narvi.protego.spring.rules.TestExecutionSteps.Scenario;
 
 public class ScenarioDisplayNameGenerator implements DisplayNameGenerator {
 

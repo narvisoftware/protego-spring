@@ -1,4 +1,4 @@
-package app.narvi.protego.signatures.rules;
+package app.narvi.protego.spring.rules;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

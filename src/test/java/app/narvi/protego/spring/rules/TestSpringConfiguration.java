@@ -1,4 +1,4 @@
-package app.narvi.protego.signatures.rules;
+package app.narvi.protego.spring.rules;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

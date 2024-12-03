@@ -1,15 +1,15 @@
-package app.narvi.protego.signatures.rules;
+package app.narvi.protego.spring.rules;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import app.narvi.protego.PolicyRule;
-import app.narvi.protego.signatures.permission.SpringBeanPermission;
+import app.narvi.protego.spring.permission.BasePermission;
 
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public abstract class SpringBeanPolicyRule<P extends SpringBeanPermission, S> extends PolicyRule<P> {
+public abstract class SpringBeanPolicyRule<P extends BasePermission, S> extends PolicyRule<P> {
 
   protected P permission;
   protected S securityContext;

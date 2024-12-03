@@ -1,14 +1,14 @@
-package app.narvi.protego.signatures.auditlog;
+package app.narvi.protego.spring.auditlog;
 
 import static app.narvi.protego.PermissionDecision.Decision.DENY;
 import static app.narvi.protego.PermissionDecision.Decision.PERMIT;
-import static app.narvi.protego.signatures.auditlog.LoggingAuditProvider.LoggingAttributes.ACTION;
-import static app.narvi.protego.signatures.auditlog.LoggingAuditProvider.LoggingAttributes.LOG_TYPE;
-import static app.narvi.protego.signatures.auditlog.LoggingAuditProvider.LoggingAttributes.PERMISSION;
-import static app.narvi.protego.signatures.auditlog.LoggingAuditProvider.LoggingAttributes.PERMISSION_NAME;
-import static app.narvi.protego.signatures.auditlog.LoggingAuditProvider.LoggingAttributes.PROTECTED_RESOURCES;
-import static app.narvi.protego.signatures.auditlog.LoggingAuditProvider.LoggingAttributes.SKIPPED_FROM_VOTING;
-import static app.narvi.protego.signatures.auditlog.LoggingAuditProvider.LoggingAttributes.VOTING_DESCRIPTION;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.ACTION;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.LOG_TYPE;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.PERMISSION;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.PERMISSION_NAME;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.PROTECTED_RESOURCES;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.SKIPPED_FROM_VOTING;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.VOTING_DESCRIPTION;
 
 import java.lang.invoke.MethodHandles;
 import java.util.AbstractMap;
@@ -23,12 +23,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import app.narvi.protego.AuditProvider;
-import app.narvi.protego.CrudAction;
-import app.narvi.protego.signatures.permission.SpringBeanPermission;
-import app.narvi.protego.signatures.rules.SpringBeanPolicyRule;
+import app.narvi.protego.spring.permission.BasePermission;
+import app.narvi.protego.spring.rules.SpringBeanPolicyRule;
 
 @Component
-public class LoggingAuditProvider implements AuditProvider<SpringBeanPermission, SpringBeanPolicyRule> {
+public class LoggingAuditProvider implements AuditProvider<BasePermission, SpringBeanPolicyRule> {
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -45,21 +44,21 @@ public class LoggingAuditProvider implements AuditProvider<SpringBeanPermission,
 
   @Override
   public void audit(
-      SpringBeanPermission permission,
+      BasePermission permission,
       Votes<SpringBeanPolicyRule> votes,
       Set<SpringBeanPolicyRule> rulesSkippedFromVoting) {
     String message;
     if (votes.getDecision() == PERMIT) {
-      message = "PERMIT was voted for " + permission.getClass().getSimpleName() +
+      message = "PERMIT was voted for " + permission.toSimpleString() +
           " by " + votes.getRulesVotingDecision(PERMIT).stream().findFirst().get().getClass().getSimpleName();
     } else if (votes.getDecision() == DENY) {
-      message = "DENY was voted for " + permission.getClass().getSimpleName() +
+      message = "DENY was voted for " + permission.toSimpleString() +
           " by rules: " +
-          votes.getRulesVotingDecision(PERMIT).stream()
+          votes.getRulesVotingDecision(DENY).stream()
               .map(pr -> pr.getClass().getSimpleName())
               .collect(Collectors.joining(", "));
     } else {
-      message = "Permission " + permission.getClass().getSimpleName() + " not grated." +
+      message = "Permission " + permission.toSimpleString() + " not grated." +
           "All policy rules ABSTAIN from voting.";
     }
 
@@ -67,7 +66,7 @@ public class LoggingAuditProvider implements AuditProvider<SpringBeanPermission,
         .map(v ->
             new AbstractMap.SimpleImmutableEntry<String, String>(
                 v.getPermissionDecision().getDecision().name(),
-                v.getPolicyRule().getClass().getSimpleName() + ":" + v.getPermissionDecision().getDecision().name())
+                v.getPolicyRule().getClass().getSimpleName())
         )
         .collect(Collectors.toMap(
             e -> e.getKey(),
@@ -83,8 +82,8 @@ public class LoggingAuditProvider implements AuditProvider<SpringBeanPermission,
         .addKeyValue(LOG_TYPE, "PERMISSION_GRANTING_DECISION")
         .addKeyValue(PERMISSION_NAME, permission.getClass().getCanonicalName())
         .addKeyValue(PERMISSION, ImmutableMap.builder()
-            .put(ACTION, ((CrudAction) permission.getAction()).name())
-            .put(PROTECTED_RESOURCES, permission.getProtectedResources()))
+            .put(ACTION, permission.getAction().name())
+            .put(PROTECTED_RESOURCES, permission.getProtectedResources()).build())
         .addKeyValue(VOTING_DESCRIPTION, votesDescription)
         .log();
   }

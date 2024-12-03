@@ -1,5 +1,7 @@
-package app.narvi.protego.signatures.rules;
+package app.narvi.protego.spring.rules;
 
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,8 +40,9 @@ public class ScanningPolicyRuleProvider implements PolicyRulesProvider, Initiali
 
   }
 
+  @Override
   public void afterPropertiesSet() {
-    if(baseScanPackage == null) {
+    if (baseScanPackage == null) {
       throw new IllegalArgumentException("Spring property 'protego.policyRules.packageToScan' must be defined");
     }
     baseScanPackage = baseScanPackage.replace('.', '/');
@@ -50,8 +53,9 @@ public class ScanningPolicyRuleProvider implements PolicyRulesProvider, Initiali
   private void loadAuditProvidersAsSpringBeans() {
     AutowireCapableBeanFactory beanFactory = applicationContext.getAutowireCapableBeanFactory();
     Set<AuditProvider> auditProviders = AuditServices.getAuditProviders();
-    for(AuditProvider anAuditProvider : auditProviders) {
-      NamedBeanHolder<? extends AuditProvider> namedBeanHolder = beanFactory.resolveNamedBean(anAuditProvider.getClass());
+    for (AuditProvider anAuditProvider : auditProviders) {
+      NamedBeanHolder<? extends AuditProvider> namedBeanHolder = beanFactory.resolveNamedBean(
+          anAuditProvider.getClass());
       String beanName = namedBeanHolder.getBeanName();
       beanFactory.configureBean(anAuditProvider, beanName);
     }
@@ -79,8 +83,17 @@ public class ScanningPolicyRuleProvider implements PolicyRulesProvider, Initiali
   public Set<? extends SpringBeanPolicyRule> collect(Permission permission) {
     Set<SpringBeanPolicyRule> newPolicyRules = new HashSet<>();
     for (Class<? extends SpringBeanPolicyRule> policyRule : policyRules) {
+      Constructor[] constructors = policyRule.getConstructors();
+      boolean hasSameType = Arrays.stream(constructors)
+          .filter(c -> c.getParameterTypes()[0].isAssignableFrom(permission.getClass()))
+          .findFirst().isPresent();
+      Permission permissionForConstructor = null;
+      if (hasSameType) {
+        permissionForConstructor = permission;
+      }
       newPolicyRules.add(
-          applicationContext.getBean(policyRule, permission, securityContextProvider.getCurrentSecurityContext())
+          applicationContext.getBean(policyRule, permissionForConstructor,
+              securityContextProvider.getCurrentSecurityContext())
       );
     }
     return newPolicyRules;

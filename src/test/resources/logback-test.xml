@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+  <conversionRule conversionWord="jsonKV" converterClass="app.narvi.protego.spring.rules.logback.KeyValueJsonConverter"/>
+
+  <appender name="CONSOLE-LOCAL" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        [%d{YYYY-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] [%logger{0} - %logger]
+        [%red(%replace(%replace(%rootException{0}){'\t\t*', ''}){'\n', ''}){}] %n
+        ==>> %msg %jsonKV %n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <!-- on local env do not use json for logging -->
+  <root level="INFO" additivity="false">
+    <appender-ref ref="CONSOLE-LOCAL"/>
+  </root>
+
+</configuration>
