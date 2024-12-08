@@ -58,6 +58,7 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
       BasePermission permission,
       Votes<SpringBeanPolicyRule> votes,
       Set<SpringBeanPolicyRule> rulesSkippedFromVoting) {
+
     String message;
     if (votes.getDecision() == PERMIT) {
       message = "PERMIT was voted for " + permission.toSimpleString() +
