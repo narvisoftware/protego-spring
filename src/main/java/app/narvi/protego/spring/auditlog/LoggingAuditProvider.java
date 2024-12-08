@@ -11,23 +11,26 @@ import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttr
 import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.VOTING_DESCRIPTION;
 
 import java.lang.invoke.MethodHandles;
-import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 import app.narvi.protego.AuditProvider;
+import app.narvi.protego.AuditServices;
+import app.narvi.protego.PolicyRule;
 import app.narvi.protego.spring.permission.BasePermission;
 import app.narvi.protego.spring.rules.SpringBeanPolicyRule;
 
 @Component
-public class LoggingAuditProvider implements AuditProvider<BasePermission, SpringBeanPolicyRule> {
+public class LoggingAuditProvider implements AuditProvider<BasePermission, SpringBeanPolicyRule>, InitializingBean {
 
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -40,6 +43,14 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
     public static String PROTECTED_RESOURCES = "protectedResources";
     public static String SKIPPED_FROM_VOTING = "SKIPPED_FROM_VOTING";
     public static String VOTING_DESCRIPTION = "votingDescription";
+  }
+
+  @Override
+  public void afterPropertiesSet() {
+    if (AuditServices.containsAuditProvider(this)) {
+      AuditServices.removeAuditProvider(this);
+    }
+    AuditServices.addProvider(this);
   }
 
   @Override
@@ -62,20 +73,28 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
           "All policy rules ABSTAIN from voting.";
     }
 
-    Map<String, Set<String>> votesDescription = votes.getVotes().stream()
-        .map(v ->
-            new AbstractMap.SimpleImmutableEntry<String, String>(
-                v.getPermissionDecision().getDecision().name(),
-                v.getPolicyRule().getClass().getSimpleName())
-        )
-        .collect(Collectors.toMap(
-            e -> e.getKey(),
-            e -> Set.of(e.getValue()),
-            (s1, s2) -> Sets.union(s1, s2)
-        ));
-    votesDescription.put(SKIPPED_FROM_VOTING, rulesSkippedFromVoting.stream()
-        .map(pr -> pr.getClass().getSimpleName())
-        .collect(Collectors.toSet()));
+    Map<String, Map<String, String>> votesDetails = new HashMap<>();
+    for (Vote aVote : votes.getVotes()) {
+      String decision = aVote.getPermissionDecision().getDecision().name();
+      votesDetails
+          .merge(decision,
+              Maps.newHashMap(ImmutableMap.of(
+                  aVote.getPolicyRule().getClass().getSimpleName(),
+                  aVote.getPermissionDecision().getReasonDescription())),
+              (soFar, newVal) -> {
+                soFar.put(
+                    aVote.getPolicyRule().getClass().getSimpleName(),
+                    aVote.getPermissionDecision().getReasonDescription());
+                return soFar;
+              }
+          );
+    }
+
+    Map<String, String> skippedDetail = new HashMap<>();
+    for (PolicyRule aPolicyRule : rulesSkippedFromVoting) {
+      skippedDetail.put(aPolicyRule.getClass().getSimpleName(), "");
+    }
+    votesDetails.put(SKIPPED_FROM_VOTING, skippedDetail);
 
     LOG.atInfo()
         .setMessage(message)
@@ -84,7 +103,7 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
         .addKeyValue(PERMISSION, ImmutableMap.builder()
             .put(ACTION, permission.getAction().name())
             .put(PROTECTED_RESOURCES, permission.getProtectedResources()).build())
-        .addKeyValue(VOTING_DESCRIPTION, votesDescription)
+        .addKeyValue(VOTING_DESCRIPTION, votesDetails)
         .log();
   }
 

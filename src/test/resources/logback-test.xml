@@ -2,13 +2,12 @@
 
 <configuration>
   <conversionRule conversionWord="jsonKV" converterClass="app.narvi.protego.spring.rules.logback.KeyValueJsonConverter"/>
+  <conversionRule conversionWord="notEmpty" converterClass="app.narvi.protego.spring.rules.logback.NotEmptyConverter"/>
 
   <appender name="CONSOLE-LOCAL" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>
-        [%d{YYYY-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] [%logger{0} - %logger]
-        [%red(%replace(%replace(%rootException{0}){'\t\t*', ''}){'\n', ''}){}] %n
-        ==>> %msg %jsonKV %n
+        [%d{YYYY-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] [%logger{0} - %logger] %n ==>> %msg %notEmpty(%n%red(%rootException{0})) %blue(%xException{full}) %jsonKV
       </pattern>
     </encoder>
   </appender>

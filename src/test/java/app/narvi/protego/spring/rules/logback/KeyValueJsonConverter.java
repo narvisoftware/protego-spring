@@ -41,7 +41,7 @@ public class KeyValueJsonConverter extends ClassicConverter {
           .append(toJson(keyValuePair.value).replaceAll("\n",
               "\n\t" + " ".repeat(5 + keyValuePair.key.length())));
     }
-    return sb.toString();
+    return sb.toString() + "\n";
   }
 
   public String toJson(Object o) {
