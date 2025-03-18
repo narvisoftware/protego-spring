@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import app.narvi.protego.spring.rules.SecurityContextProvider;
 
 @Component
-public class TestSecurityContextProvider implements SecurityContextProvider<TestSecurityContext> {
+public class TestSecurityContextProvider implements SecurityContextProvider {
 
   @Autowired
   TestSecurityContext testSecurityContext;

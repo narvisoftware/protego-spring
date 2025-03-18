@@ -3,6 +3,7 @@ package app.narvi.protego.spring.auditlog;
 import static app.narvi.protego.PermissionDecision.Decision.DENY;
 import static app.narvi.protego.PermissionDecision.Decision.PERMIT;
 import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.ACTION;
+import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.CURRENT_SUBJECT_IDENTIFICATION_DESCRIPTION;
 import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.LOG_TYPE;
 import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.PERMISSION;
 import static app.narvi.protego.spring.auditlog.LoggingAuditProvider.LoggingAttributes.PERMISSION_NAME;
@@ -21,12 +22,14 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import app.narvi.protego.AuditProvider;
 import app.narvi.protego.AuditServices;
 import app.narvi.protego.PolicyRule;
 import app.narvi.protego.spring.permission.BasePermission;
+import app.narvi.protego.spring.rules.SecurityContextProvider;
 import app.narvi.protego.spring.rules.SpringBeanPolicyRule;
 
 @Component
@@ -35,7 +38,6 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static class LoggingAttributes {
-
     public static String LOG_TYPE = "logType";
     public static String PERMISSION_NAME = "permissionName";
     public static String PERMISSION = "permission";
@@ -43,7 +45,11 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
     public static String PROTECTED_RESOURCES = "protectedResources";
     public static String SKIPPED_FROM_VOTING = "SKIPPED_FROM_VOTING";
     public static String VOTING_DESCRIPTION = "votingDescription";
+    public static String CURRENT_SUBJECT_IDENTIFICATION_DESCRIPTION = "currentSubjectIdentificationDescription";
   }
+
+  @Autowired
+  SecurityContextProvider securityContextProvider;
 
   @Override
   public void afterPropertiesSet() {
@@ -60,18 +66,27 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
       Set<SpringBeanPolicyRule> rulesSkippedFromVoting) {
 
     String message;
+    String shortMessage;
     if (votes.getDecision() == PERMIT) {
-      message = "PERMIT was voted for " + permission.toSimpleString() +
+      message = "PERMIT was voted for \"" +
+          securityContextProvider.getCurrentSecurityContext().getCurrentSubjectIdentificationDescription() + "\"" +
+          " to access " + permission.toSimpleString() +
           " by " + votes.getRulesVotingDecision(PERMIT).stream().findFirst().get().getClass().getSimpleName();
+      shortMessage = "permission: PERMIT for " + permission.toSimpleString();
     } else if (votes.getDecision() == DENY) {
-      message = "DENY was voted for " + permission.toSimpleString() +
+      message = "DENY was voted for \"" +
+          securityContextProvider.getCurrentSecurityContext().getCurrentSubjectIdentificationDescription() + "\"" +
+          " to access " + permission.toSimpleString() +
           " by rules: " +
           votes.getRulesVotingDecision(DENY).stream()
               .map(pr -> pr.getClass().getSimpleName())
               .collect(Collectors.joining(", "));
+      shortMessage = "permission: DENY for " + permission.toSimpleString();
     } else {
-      message = "Permission " + permission.toSimpleString() + " not grated." +
+      message = "Permission " + permission.toSimpleString() + " not grated to \"" +
+          securityContextProvider.getCurrentSecurityContext().getCurrentSubjectIdentificationDescription() + "\". " +
           "All policy rules ABSTAIN from voting.";
+      shortMessage = "permission: ABSTAIN for " + permission.toSimpleString();
     }
 
     Map<String, Map<String, String>> votesDetails = new HashMap<>();
@@ -97,8 +112,11 @@ public class LoggingAuditProvider implements AuditProvider<BasePermission, Sprin
     }
     votesDetails.put(SKIPPED_FROM_VOTING, skippedDetail);
 
-    LOG.atInfo()
+    LOG.info(shortMessage);
+
+    LOG.atDebug()
         .setMessage(message)
+        .addKeyValue(CURRENT_SUBJECT_IDENTIFICATION_DESCRIPTION, securityContextProvider.getCurrentSecurityContext().getCurrentSubjectIdentificationDescription())
         .addKeyValue(LOG_TYPE, "PERMISSION_GRANTING_DECISION")
         .addKeyValue(PERMISSION_NAME, permission.getClass().getCanonicalName())
         .addKeyValue(PERMISSION, ImmutableMap.builder()

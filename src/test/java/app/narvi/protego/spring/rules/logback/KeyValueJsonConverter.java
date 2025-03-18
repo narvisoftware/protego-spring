@@ -34,9 +34,13 @@ public class KeyValueJsonConverter extends ClassicConverter {
     Collections.sort(kvpList, Comparator.comparing(k -> k.key));
 
     StringBuilder sb = new StringBuilder();
-    for (KeyValuePair keyValuePair : kvpList) {
-      sb.append("\n\t- ")
-          .append(keyValuePair.key)
+    for (int i = 0; i < kvpList.size(); i++) {
+      KeyValuePair keyValuePair = kvpList.get(i);
+      if (i > 0) {
+        sb.append("\n");
+      }
+      sb.append("\t- ");
+      sb.append(keyValuePair.key)
           .append(" = ")
           .append(toJson(keyValuePair.value).replaceAll("\n",
               "\n\t" + " ".repeat(5 + keyValuePair.key.length())));

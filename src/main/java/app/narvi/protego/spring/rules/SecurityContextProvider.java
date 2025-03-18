@@ -3,8 +3,8 @@ package app.narvi.protego.spring.rules;
 import org.springframework.stereotype.Component;
 
 @Component
-public interface SecurityContextProvider<C> {
+public interface SecurityContextProvider {
 
-  C getCurrentSecurityContext();
+  SecurityContext getCurrentSecurityContext();
 
 }

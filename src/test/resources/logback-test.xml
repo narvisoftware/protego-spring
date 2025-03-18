@@ -7,13 +7,13 @@
   <appender name="CONSOLE-LOCAL" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>
-        [%d{YYYY-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] [%logger{0} - %logger] %n ==>> %msg %notEmpty(%n%red(%rootException{0})) %blue(%xException{full}) %jsonKV
+        [%d{YYYY-MM-dd HH:mm:ss.SSS}] [%highlight(%-5level)] %boldRed(%rootException{0}) [%logger{0} - %logger] %n ==>> %msg %n %jsonKV %n %blue(%xException{full})
       </pattern>
     </encoder>
   </appender>
 
   <!-- on local env do not use json for logging -->
-  <root level="INFO" additivity="false">
+  <root level="DEBUG" additivity="false">
     <appender-ref ref="CONSOLE-LOCAL"/>
   </root>
 
